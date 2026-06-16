@@ -89,18 +89,20 @@ DrawText "Search: harness, MCP, agent..." $fontBody $muted 24 127 260 24
 FillRoundRect 12 170 300 126 8 ([System.Drawing.Color]::FromArgb(17, 23, 34))
 DrawText "Wiki Health" $fontBold $text 24 184 140 24
 DrawText "$healthScore/100" $fontSmall $ok 246 188 58 18
-DrawText "Sources" $fontSmall $muted 24 218 55 18
-DrawText "$sourceCount" $fontBold $text 24 235 45 22
-DrawText "Concepts" $fontSmall $muted 120 218 62 18
-DrawText "$conceptCount" $fontBold $text 120 235 45 22
-DrawText "Broken" $fontSmall $muted 216 218 55 18
-DrawText "0" $fontBold $text 216 235 45 22
-DrawText "Orphans" $fontSmall $muted 24 262 58 18
-DrawText "0" $fontBold $text 24 279 45 22
-DrawText "Gaps" $fontSmall $muted 120 262 44 18
-DrawText "$gapCount" $fontBold $text 120 279 44 22
-DrawText "Events" $fontSmall $muted 216 262 44 18
-DrawText "$eventCount" $fontBold $text 216 279 36 22
+$hx = @(24, 122, 220)
+$hy = @(218, 262)
+DrawText "Sources" $fontSmall $muted $hx[0] $hy[0] 80 18
+DrawText "$sourceCount" $fontBold $text $hx[0] ($hy[0] + 17) 80 22
+DrawText "Concepts" $fontSmall $muted $hx[1] $hy[0] 80 18
+DrawText "$conceptCount" $fontBold $text $hx[1] ($hy[0] + 17) 80 22
+DrawText "Broken" $fontSmall $muted $hx[2] $hy[0] 80 18
+DrawText "0" $fontBold $text $hx[2] ($hy[0] + 17) 80 22
+DrawText "Orphans" $fontSmall $muted $hx[0] $hy[1] 80 18
+DrawText "0" $fontBold $text $hx[0] ($hy[1] + 17) 80 22
+DrawText "Gaps" $fontSmall $muted $hx[1] $hy[1] 80 18
+DrawText "$gapCount" $fontBold $text $hx[1] ($hy[1] + 17) 80 22
+DrawText "Events" $fontSmall $muted $hx[2] $hy[1] 80 18
+DrawText "$eventCount" $fontBold $text $hx[2] ($hy[1] + 17) 80 22
 
 DrawText "CONCEPTS" $fontSmall $muted 16 314 200 20
 $concepts = @(
