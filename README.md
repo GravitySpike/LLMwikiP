@@ -145,6 +145,8 @@ Available tools:
 - `answer_from_wiki`: answer a question using retrieved wiki pages
 - `validate_wiki_links`: check internal double-bracket wiki links
 - `wiki_health`: report page counts, broken links, orphan pages, source coverage, score, and recommendations
+- `list_gaps`: list open knowledge gaps created by weak or missing wiki evidence
+- `create_knowledge_gap`: create a gap backlog item for a missing topic
 
 Example JSON-RPC message:
 
@@ -170,6 +172,8 @@ Local endpoints:
 - `POST /api/answer`
 - `GET /api/validate`
 - `GET /api/health`
+- `GET /api/gaps`
+- `POST /api/gaps`
 
 ## Wiki Health Dashboard
 
@@ -185,6 +189,37 @@ It reports:
 
 The same information is available to agents through the `wiki_health` MCP tool and to humans through `wiki/health-report.md`.
 
+## Knowledge Gap Tracker
+
+The viewer and MCP tools now include a lightweight growth loop.
+
+When `answer_from_wiki` cannot find enough evidence, it does not silently fail. It creates a Markdown backlog item in:
+
+```text
+wiki/gaps/
+```
+
+That gap records:
+
+- the unanswered question
+- why the wiki could not answer it
+- the closest existing pages
+- what source material should be added next
+
+This makes the wiki behave less like a static file browser and more like a growing knowledge system.
+
+Typical loop:
+
+```text
+ask question
+  -> wiki lacks evidence
+  -> gap file is created
+  -> add source to raw/
+  -> rebuild wiki
+  -> validate
+  -> re-ask and close the gap
+```
+
 ## Material Input to Integration Flow
 
 When you add new material:
@@ -194,7 +229,8 @@ When you add new material:
 3. Run `npm run validate`.
 4. Start `npm run app`.
 5. Ask the wiki agent a question in the viewer.
-6. If the answer is weak, improve the raw source or add a concept pattern in `scripts/build-llm-wiki.js`.
+6. If the answer is weak, the system creates a knowledge gap in `wiki/gaps/`.
+7. Add a better raw source or concept pattern, rebuild, and re-ask.
 
 ## Demo Image
 

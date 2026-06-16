@@ -6,6 +6,7 @@ $pageCount = 0
 $healthScore = 0
 $sourceCount = 0
 $conceptCount = 0
+$gapCount = 0
 try {
   $healthJson = (node -e "const wiki=require('./scripts/wiki-core'); process.stdout.write(JSON.stringify(wiki.wikiHealth()))")
   $health = $healthJson | ConvertFrom-Json
@@ -13,6 +14,7 @@ try {
   $healthScore = $health.score
   $sourceCount = $health.sourceCount
   $conceptCount = $health.conceptCount
+  $gapCount = $health.gapCount
 } catch {
   $pageCount = 0
 }
@@ -86,12 +88,14 @@ DrawText "Wiki Health" $fontBold $text 24 184 140 24
 DrawText "$healthScore/100" $fontSmall $ok 246 188 58 18
 DrawText "Sources" $fontSmall $muted 24 218 55 18
 DrawText "$sourceCount" $fontBold $text 24 235 45 22
-DrawText "Concepts" $fontSmall $muted 94 218 62 18
-DrawText "$conceptCount" $fontBold $text 94 235 45 22
-DrawText "Broken" $fontSmall $muted 174 218 55 18
-DrawText "0" $fontBold $text 174 235 45 22
-DrawText "Orphans" $fontSmall $muted 244 218 58 18
-DrawText "0" $fontBold $text 244 235 45 22
+DrawText "Concepts" $fontSmall $muted 84 218 62 18
+DrawText "$conceptCount" $fontBold $text 84 235 45 22
+DrawText "Broken" $fontSmall $muted 154 218 55 18
+DrawText "0" $fontBold $text 154 235 45 22
+DrawText "Orphans" $fontSmall $muted 214 218 58 18
+DrawText "0" $fontBold $text 214 235 45 22
+DrawText "Gaps" $fontSmall $muted 270 218 44 18
+DrawText "$gapCount" $fontBold $text 270 235 28 22
 
 DrawText "CONCEPTS" $fontSmall $muted 16 274 200 20
 $concepts = @(

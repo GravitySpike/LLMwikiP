@@ -3,9 +3,21 @@ const path = require("node:path");
 
 const ROOT = path.resolve(__dirname, "..");
 const WIKI_DIR = path.join(ROOT, "wiki");
+const GAPS_DIR = path.join(WIKI_DIR, "gaps");
+const STOPWORDS = new Set(["a", "an", "and", "are", "as", "from", "how", "is", "of", "or", "the", "to", "what", "why"]);
 
 function slugFromFile(filePath) {
   return path.basename(filePath, ".md");
+}
+
+function slugify(input) {
+  return (
+    String(input || "knowledge-gap")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || "knowledge-gap"
+  );
 }
 
 function walkMarkdown(dir) {
@@ -91,6 +103,15 @@ function normalizeQuery(query) {
     .filter(Boolean);
 }
 
+function normalizeQuery(query) {
+  return String(query || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .split(/\s+/)
+    .filter((term) => term.length > 1 && !STOPWORDS.has(term))
+    .filter(Boolean);
+}
+
 function scorePage(page, terms) {
   const title = page.title.toLowerCase();
   const body = page.body.toLowerCase();
@@ -126,6 +147,18 @@ function searchWiki(query, limit = 8) {
     }));
 }
 
+function hasEnoughEvidence(hits, terms) {
+  if (!hits.length) return false;
+  if (!terms.length) return true;
+
+  const best = hits[0];
+  if (best.score >= 12 && terms.length <= 2) return true;
+
+  const searchable = `${best.title} ${best.excerpt}`.toLowerCase();
+  const matchedTerms = terms.filter((term) => searchable.includes(term));
+  return matchedTerms.length >= Math.min(2, terms.length) && best.score >= 8;
+}
+
 function makeExcerpt(body, terms) {
   const lines = body
     .split("\n")
@@ -157,11 +190,17 @@ function readPage(idOrSlug) {
 
 function answerFromWiki(question, limit = 5) {
   const hits = searchWiki(question, limit);
-  if (!hits.length) {
+  const terms = normalizeQuery(question);
+  if (!hasEnoughEvidence(hits, terms)) {
+    const gap = createKnowledgeGap(question, {
+      reason: "The wiki did not contain enough matching evidence to answer confidently.",
+      matchedPages: hits.slice(0, 3),
+    });
     return {
       answer:
-        "The current wiki does not contain enough evidence for this question. Add a source or use web research before updating the wiki.",
+        `The current wiki does not contain enough evidence for this question.\n\nKnowledge Gap created: ${gap.path}\n\nNext step: add a source to raw/ that explains this topic, then run npm run build:wiki and npm run validate.`,
       sources: [],
+      gap,
     };
   }
 
@@ -182,6 +221,86 @@ function answerFromWiki(question, limit = 5) {
     answer: answerLines.join("\n"),
     sources: hits.map(({ title, path: pagePath, type }) => ({ title, path: pagePath, type })),
   };
+}
+
+function createKnowledgeGap(question, details = {}) {
+  fs.mkdirSync(GAPS_DIR, { recursive: true });
+
+  const baseSlug = slugify(question);
+  let slug = baseSlug;
+  let counter = 2;
+  while (fs.existsSync(path.join(GAPS_DIR, `${slug}.md`))) {
+    const existing = readGapFile(slug);
+    if (existing && existing.question.toLowerCase() === String(question).toLowerCase()) return existing;
+    slug = `${baseSlug}-${counter}`;
+    counter += 1;
+  }
+
+  const now = new Date().toISOString();
+  const matchedPages = details.matchedPages || [];
+  const content = `---
+type: gap
+title: "Knowledge Gap - ${question.replace(/"/g, '\\"')}"
+status: "open"
+created_at: "${now}"
+question: "${question.replace(/"/g, '\\"')}"
+---
+
+# Knowledge Gap - ${question}
+
+## Question
+
+${question}
+
+## Why This Gap Exists
+
+${details.reason || "The current wiki does not contain enough source-grounded evidence to answer this question."}
+
+## Closest Existing Pages
+
+${matchedPages.length ? matchedPages.map((page) => `- ${page.title} (${page.path})`).join("\n") : "- No close pages found."}
+
+## Suggested Source Intake
+
+- Add a Markdown, text, or PDF source to \`raw/\` that defines the missing topic.
+- Run \`npm run build:wiki\`.
+- Run \`npm run validate\`.
+- Re-ask the question and close this gap when the answer has source coverage.
+
+## Status
+
+Open
+`;
+
+  fs.writeFileSync(path.join(GAPS_DIR, `${slug}.md`), content, "utf8");
+  return readGapFile(slug);
+}
+
+function readGapFile(slug) {
+  const filePath = path.join(GAPS_DIR, `${slug}.md`);
+  if (!fs.existsSync(filePath)) return null;
+  const content = fs.readFileSync(filePath, "utf8");
+  const { data, body } = parseFrontmatter(content);
+  return {
+    id: `gaps/${slug}`,
+    slug,
+    title: data.title || extractTitle(body, slug),
+    question: data.question || "",
+    status: data.status || "open",
+    createdAt: data.created_at || null,
+    path: path.relative(ROOT, filePath).replace(/\\/g, "/"),
+    content,
+  };
+}
+
+function listKnowledgeGaps() {
+  if (!fs.existsSync(GAPS_DIR)) return [];
+  return fs
+    .readdirSync(GAPS_DIR)
+    .filter((file) => file.endsWith(".md"))
+    .map((file) => readGapFile(path.basename(file, ".md")))
+    .filter(Boolean)
+    .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
 }
 
 function validateWikiLinks() {
@@ -229,12 +348,14 @@ function wikiHealth() {
 
   const orphanPages = pages
     .filter((page) => page.type !== "overview" && page.path !== "wiki/index.md")
+    .filter((page) => page.type !== "gap")
     .filter((page) => !maintenancePaths.has(page.path))
     .filter((page) => (incoming.get(page.title.toLowerCase()) || 0) === 0)
     .map((page) => ({ title: page.title, path: page.path, type: page.type }));
 
   const sourcePages = pages.filter((page) => page.type === "source");
   const conceptPages = pages.filter((page) => page.type === "concept");
+  const gapPages = pages.filter((page) => page.type === "gap");
   const sourceCoverage = conceptPages.map((page) => {
     const sources = Array.isArray(page.frontmatter.sources) ? page.frontmatter.sources : [];
     return {
@@ -265,6 +386,7 @@ function wikiHealth() {
     pageCount: pages.length,
     sourceCount: sourcePages.length,
     conceptCount: conceptPages.length,
+    gapCount: gapPages.length,
     synthesisCount: pages.filter((page) => page.type === "synthesis").length,
     brokenLinkCount: validation.brokenLinks.length,
     orphanPageCount: orphanPages.length,
@@ -286,6 +408,8 @@ module.exports = {
   ROOT,
   WIKI_DIR,
   answerFromWiki,
+  createKnowledgeGap,
+  listKnowledgeGaps,
   listPages,
   loadPages,
   readPage,

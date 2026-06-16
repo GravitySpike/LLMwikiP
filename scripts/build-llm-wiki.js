@@ -452,6 +452,9 @@ generated_at: "${now}"
 }
 
 function buildHealthReport(sources, concepts) {
+  const gapsDir = path.join(wikiDir, "gaps");
+  const openGaps = fs.existsSync(gapsDir) ? fs.readdirSync(gapsDir).filter((file) => file.endsWith(".md")) : [];
+
   return `---
 type: health
 title: "Wiki Health Report"
@@ -464,6 +467,7 @@ generated_at: "${now}"
 
 - Sources: ${sources.length}
 - Concepts: ${concepts.length}
+- Open knowledge gaps: ${openGaps.length}
 - Generated at: ${now}
 - Link validation: run \`npm run validate\`
 
@@ -478,7 +482,7 @@ ${concepts
 
 ## Agent Recommendation
 
-Use the \`wiki_health\` MCP tool before answering or publishing. If broken links or uncovered concepts appear, rebuild the wiki or add better source material.
+Use the \`wiki_health\` MCP tool before answering or publishing. If broken links, uncovered concepts, or open knowledge gaps appear, rebuild the wiki or add better source material.
 `;
 }
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const {
   answerFromWiki,
+  createKnowledgeGap,
+  listKnowledgeGaps,
   listPages,
   readPage,
   searchWiki,
@@ -57,6 +59,23 @@ const tools = [
     description: "Return a quality dashboard for the current wiki, including page counts, broken links, orphan pages, coverage, and recommendations.",
     inputSchema: { type: "object", properties: {} },
   },
+  {
+    name: "list_gaps",
+    description: "List open knowledge gaps created when the wiki lacks enough evidence to answer a question.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
+    name: "create_knowledge_gap",
+    description: "Create a knowledge gap backlog item for a question the wiki cannot answer yet.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        question: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["question"],
+    },
+  },
 ];
 
 function textResult(value) {
@@ -80,6 +99,10 @@ async function callTool(name, args = {}) {
   if (name === "answer_from_wiki") return textResult(answerFromWiki(args.question, args.limit));
   if (name === "validate_wiki_links") return textResult(validateWikiLinks());
   if (name === "wiki_health") return textResult(wikiHealth());
+  if (name === "list_gaps") return textResult(listKnowledgeGaps());
+  if (name === "create_knowledge_gap") {
+    return textResult(createKnowledgeGap(args.question, { reason: args.reason || "Created by MCP tool request." }));
+  }
   throw new Error(`Unknown tool: ${name}`);
 }
 

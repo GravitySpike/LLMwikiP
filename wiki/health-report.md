@@ -1,7 +1,7 @@
 ---
 type: health
 title: "Wiki Health Report"
-generated_at: "2026-06-16T00:49:04.463Z"
+generated_at: "2026-06-16T01:03:21.194Z"
 ---
 
 # Wiki Health Report
@@ -10,7 +10,8 @@ generated_at: "2026-06-16T00:49:04.463Z"
 
 - Sources: 1
 - Concepts: 7
-- Generated at: 2026-06-16T00:49:04.463Z
+- Open knowledge gaps: 1
+- Generated at: 2026-06-16T01:03:21.194Z
 - Link validation: run `npm run validate`
 
 ## Source Coverage
@@ -25,4 +26,4 @@ generated_at: "2026-06-16T00:49:04.463Z"
 
 ## Agent Recommendation
 
-Use the `wiki_health` MCP tool before answering or publishing. If broken links or uncovered concepts appear, rebuild the wiki or add better source material.
+Use the `wiki_health` MCP tool before answering or publishing. If broken links, uncovered concepts, or open knowledge gaps appear, rebuild the wiki or add better source material.

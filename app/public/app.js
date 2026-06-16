@@ -11,6 +11,7 @@ const healthSources = document.querySelector("#health-sources");
 const healthConcepts = document.querySelector("#health-concepts");
 const healthBroken = document.querySelector("#health-broken");
 const healthOrphans = document.querySelector("#health-orphans");
+const healthGaps = document.querySelector("#health-gaps");
 const pageType = document.querySelector("#page-type");
 const pagePath = document.querySelector("#page-path");
 const chatLog = document.querySelector("#chat-log");
@@ -118,7 +119,7 @@ function renderMarkdown(source) {
 }
 
 function groupPages(items) {
-  const order = ["concepts", "sources", "synthesis", "root"];
+  const order = ["concepts", "gaps", "sources", "synthesis", "root"];
   return items.reduce((groups, page) => {
     const section = order.includes(page.section) ? page.section : "root";
     groups[section] = groups[section] || [];
@@ -131,7 +132,7 @@ function renderPageList(items) {
   const groups = groupPages(items);
   pageList.innerHTML = "";
 
-  for (const section of ["concepts", "sources", "synthesis", "root"]) {
+  for (const section of ["concepts", "gaps", "sources", "synthesis", "root"]) {
     if (!groups[section]) continue;
     const label = document.createElement("div");
     label.className = "section-label";
@@ -178,6 +179,12 @@ function addMessage(role, text, sources = []) {
     sourceBox.textContent = `Sources: ${sources.map((source) => source.title).join(", ")}`;
     message.append(sourceBox);
   }
+  if (sources.gap) {
+    const gapBox = document.createElement("div");
+    gapBox.className = "sources";
+    gapBox.textContent = `Knowledge gap: ${sources.gap.path}`;
+    message.append(gapBox);
+  }
   chatLog.append(message);
   chatLog.scrollTop = chatLog.scrollHeight;
 }
@@ -190,7 +197,9 @@ async function ask(question) {
     body: JSON.stringify({ question }),
   });
   const result = await response.json();
-  addMessage("agent", result.answer, result.sources || []);
+  const sources = result.sources || [];
+  sources.gap = result.gap;
+  addMessage("agent", result.answer, sources);
 }
 
 async function boot() {
@@ -211,6 +220,7 @@ async function boot() {
   healthConcepts.textContent = String(health.conceptCount);
   healthBroken.textContent = String(health.brokenLinkCount);
   healthOrphans.textContent = String(health.orphanPageCount);
+  healthGaps.textContent = String(health.gapCount || 0);
 
   renderPageList(pages);
   await openPage("concepts/harness-engineering");

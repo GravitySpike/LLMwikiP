@@ -3,6 +3,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const {
   answerFromWiki,
+  createKnowledgeGap,
+  listKnowledgeGaps,
   listPages,
   readPage,
   searchWiki,
@@ -93,6 +95,17 @@ const server = http.createServer(async (req, res) => {
 
     if (url.pathname === "/api/health") {
       sendJson(res, wikiHealth());
+      return;
+    }
+
+    if (url.pathname === "/api/gaps" && req.method === "GET") {
+      sendJson(res, listKnowledgeGaps());
+      return;
+    }
+
+    if (url.pathname === "/api/gaps" && req.method === "POST") {
+      const payload = JSON.parse((await readBody(req)) || "{}");
+      sendJson(res, createKnowledgeGap(payload.question || "", { reason: payload.reason || "Created from viewer." }));
       return;
     }
 
