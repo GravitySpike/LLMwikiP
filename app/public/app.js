@@ -12,6 +12,7 @@ const healthConcepts = document.querySelector("#health-concepts");
 const healthBroken = document.querySelector("#health-broken");
 const healthOrphans = document.querySelector("#health-orphans");
 const healthGaps = document.querySelector("#health-gaps");
+const healthEvents = document.querySelector("#health-events");
 const pageType = document.querySelector("#page-type");
 const pagePath = document.querySelector("#page-path");
 const chatLog = document.querySelector("#chat-log");
@@ -221,6 +222,7 @@ async function boot() {
   healthBroken.textContent = String(health.brokenLinkCount);
   healthOrphans.textContent = String(health.orphanPageCount);
   healthGaps.textContent = String(health.gapCount || 0);
+  healthEvents.textContent = String(health.growthEventCount || 0);
 
   renderPageList(pages);
   await openPage("concepts/harness-engineering");

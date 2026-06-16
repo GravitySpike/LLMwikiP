@@ -4,6 +4,7 @@ const path = require("node:path");
 const ROOT = path.resolve(__dirname, "..");
 const WIKI_DIR = path.join(ROOT, "wiki");
 const GAPS_DIR = path.join(WIKI_DIR, "gaps");
+const GROWTH_LOG_PATH = path.join(WIKI_DIR, "growth-log.md");
 const STOPWORDS = new Set(["a", "an", "and", "are", "as", "from", "how", "is", "of", "or", "the", "to", "what", "why"]);
 
 function slugFromFile(filePath) {
@@ -225,6 +226,7 @@ function answerFromWiki(question, limit = 5) {
 
 function createKnowledgeGap(question, details = {}) {
   fs.mkdirSync(GAPS_DIR, { recursive: true });
+  ensureGrowthLog();
 
   const baseSlug = slugify(question);
   let slug = baseSlug;
@@ -273,7 +275,54 @@ Open
 `;
 
   fs.writeFileSync(path.join(GAPS_DIR, `${slug}.md`), content, "utf8");
-  return readGapFile(slug);
+  const gap = readGapFile(slug);
+  appendGrowthLog(`gap: ${summarizeOneLine(question)} -> ${gap.path}`);
+  return gap;
+}
+
+function summarizeOneLine(value, maxLength = 96) {
+  const summary = String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[|`]/g, "");
+  return summary.length > maxLength ? `${summary.slice(0, maxLength - 3)}...` : summary;
+}
+
+function ensureGrowthLog() {
+  fs.mkdirSync(WIKI_DIR, { recursive: true });
+  if (fs.existsSync(GROWTH_LOG_PATH)) return;
+  const content = `# Growth Log
+
+This append-only log records one-line summaries whenever the wiki discovers a new knowledge gap or growth event.
+
+| Time | Event |
+|---|---|
+`;
+  fs.writeFileSync(GROWTH_LOG_PATH, content, "utf8");
+}
+
+function appendGrowthLog(event) {
+  ensureGrowthLog();
+  const line = `| ${new Date().toISOString()} | ${event.replace(/\|/g, "/")} |\n`;
+  fs.appendFileSync(GROWTH_LOG_PATH, line, "utf8");
+}
+
+function readGrowthLog(limit = 20) {
+  ensureGrowthLog();
+  const content = fs.readFileSync(GROWTH_LOG_PATH, "utf8");
+  const entries = content
+    .split("\n")
+    .filter((line) => line.startsWith("| 20"))
+    .map((line) => {
+      const parts = line.split("|").map((part) => part.trim());
+      return { time: parts[1], event: parts[2] };
+    })
+    .reverse();
+  return {
+    path: path.relative(ROOT, GROWTH_LOG_PATH).replace(/\\/g, "/"),
+    total: entries.length,
+    entries: entries.slice(0, limit),
+  };
 }
 
 function readGapFile(slug) {
@@ -329,7 +378,7 @@ function validateWikiLinks() {
 function wikiHealth() {
   const pages = loadPages();
   const validation = validateWikiLinks();
-  const maintenancePaths = new Set(["wiki/log.md", "wiki/schema.md", "wiki/health-report.md"]);
+  const maintenancePaths = new Set(["wiki/growth-log.md", "wiki/log.md", "wiki/schema.md", "wiki/health-report.md"]);
   const byType = pages.reduce((counts, page) => {
     counts[page.type] = (counts[page.type] || 0) + 1;
     return counts;
@@ -356,6 +405,7 @@ function wikiHealth() {
   const sourcePages = pages.filter((page) => page.type === "source");
   const conceptPages = pages.filter((page) => page.type === "concept");
   const gapPages = pages.filter((page) => page.type === "gap");
+  const growthLog = readGrowthLog(1);
   const sourceCoverage = conceptPages.map((page) => {
     const sources = Array.isArray(page.frontmatter.sources) ? page.frontmatter.sources : [];
     return {
@@ -387,6 +437,7 @@ function wikiHealth() {
     sourceCount: sourcePages.length,
     conceptCount: conceptPages.length,
     gapCount: gapPages.length,
+    growthEventCount: growthLog.total,
     synthesisCount: pages.filter((page) => page.type === "synthesis").length,
     brokenLinkCount: validation.brokenLinks.length,
     orphanPageCount: orphanPages.length,
@@ -407,11 +458,13 @@ function wikiHealth() {
 module.exports = {
   ROOT,
   WIKI_DIR,
+  appendGrowthLog,
   answerFromWiki,
   createKnowledgeGap,
   listKnowledgeGaps,
   listPages,
   loadPages,
+  readGrowthLog,
   readPage,
   searchWiki,
   validateWikiLinks,

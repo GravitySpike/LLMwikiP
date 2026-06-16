@@ -7,6 +7,7 @@ $healthScore = 0
 $sourceCount = 0
 $conceptCount = 0
 $gapCount = 0
+$eventCount = 0
 try {
   $healthJson = (node -e "const wiki=require('./scripts/wiki-core'); process.stdout.write(JSON.stringify(wiki.wikiHealth()))")
   $health = $healthJson | ConvertFrom-Json
@@ -14,10 +15,12 @@ try {
   $healthScore = $health.score
   $sourceCount = $health.sourceCount
   $conceptCount = $health.conceptCount
-  $gapCount = $health.gapCount
+  $gapCount = [string]$health.gapCount
+  $eventCount = $health.growthEventCount
 } catch {
   $pageCount = 0
 }
+if ([string]::IsNullOrWhiteSpace($gapCount)) { $gapCount = "0" }
 
 Add-Type -AssemblyName System.Drawing
 
@@ -83,21 +86,23 @@ $graphics.DrawLine((Pen $line), 0, 98, 330, 98)
 FillRoundRect 12 118 300 40 6 ([System.Drawing.Color]::FromArgb(13, 16, 23))
 DrawText "Search: harness, MCP, agent..." $fontBody $muted 24 127 260 24
 
-FillRoundRect 12 170 300 86 8 ([System.Drawing.Color]::FromArgb(17, 23, 34))
+FillRoundRect 12 170 300 126 8 ([System.Drawing.Color]::FromArgb(17, 23, 34))
 DrawText "Wiki Health" $fontBold $text 24 184 140 24
 DrawText "$healthScore/100" $fontSmall $ok 246 188 58 18
 DrawText "Sources" $fontSmall $muted 24 218 55 18
 DrawText "$sourceCount" $fontBold $text 24 235 45 22
-DrawText "Concepts" $fontSmall $muted 84 218 62 18
-DrawText "$conceptCount" $fontBold $text 84 235 45 22
-DrawText "Broken" $fontSmall $muted 154 218 55 18
-DrawText "0" $fontBold $text 154 235 45 22
-DrawText "Orphans" $fontSmall $muted 214 218 58 18
-DrawText "0" $fontBold $text 214 235 45 22
-DrawText "Gaps" $fontSmall $muted 270 218 44 18
-DrawText "$gapCount" $fontBold $text 270 235 28 22
+DrawText "Concepts" $fontSmall $muted 120 218 62 18
+DrawText "$conceptCount" $fontBold $text 120 235 45 22
+DrawText "Broken" $fontSmall $muted 216 218 55 18
+DrawText "0" $fontBold $text 216 235 45 22
+DrawText "Orphans" $fontSmall $muted 24 262 58 18
+DrawText "0" $fontBold $text 24 279 45 22
+DrawText "Gaps" $fontSmall $muted 120 262 44 18
+DrawText "$gapCount" $fontBold $text 120 279 44 22
+DrawText "Events" $fontSmall $muted 216 262 44 18
+DrawText "$eventCount" $fontBold $text 216 279 36 22
 
-DrawText "CONCEPTS" $fontSmall $muted 16 274 200 20
+DrawText "CONCEPTS" $fontSmall $muted 16 314 200 20
 $concepts = @(
   "Agent Coding",
   "Agent Pool and Orchestrator",
@@ -111,7 +116,7 @@ $concepts = @(
   "Subprocess Calling",
   "Vibe Coding"
 )
-$y = 302
+$y = 342
 foreach ($item in $concepts) {
   if ($item -eq "Harness Engineering") { FillRoundRect 8 ($y - 3) 310 34 6 ([System.Drawing.Color]::FromArgb(38, 49, 72)) }
   $graphics.FillEllipse((Brush $accent), 16, ($y + 8), 9, 9)

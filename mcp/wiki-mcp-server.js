@@ -4,6 +4,7 @@ const {
   createKnowledgeGap,
   listKnowledgeGaps,
   listPages,
+  readGrowthLog,
   readPage,
   searchWiki,
   validateWikiLinks,
@@ -76,6 +77,16 @@ const tools = [
       required: ["question"],
     },
   },
+  {
+    name: "growth_log",
+    description: "Read recent one-line growth events recorded as the wiki discovers missing knowledge.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: { type: "number", default: 20 },
+      },
+    },
+  },
 ];
 
 function textResult(value) {
@@ -103,6 +114,7 @@ async function callTool(name, args = {}) {
   if (name === "create_knowledge_gap") {
     return textResult(createKnowledgeGap(args.question, { reason: args.reason || "Created by MCP tool request." }));
   }
+  if (name === "growth_log") return textResult(readGrowthLog(args.limit || 20));
   throw new Error(`Unknown tool: ${name}`);
 }
 

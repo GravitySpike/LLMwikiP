@@ -1,7 +1,7 @@
 ---
 type: concept
 title: "Agent Specifications"
-generated_at: "2026-06-16T01:03:21.194Z"
+generated_at: "2026-06-16T01:11:13.639Z"
 sources:
   - "[[agentic-coding-demo]]"
 ---

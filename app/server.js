@@ -6,6 +6,7 @@ const {
   createKnowledgeGap,
   listKnowledgeGaps,
   listPages,
+  readGrowthLog,
   readPage,
   searchWiki,
   validateWikiLinks,
@@ -106,6 +107,11 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/api/gaps" && req.method === "POST") {
       const payload = JSON.parse((await readBody(req)) || "{}");
       sendJson(res, createKnowledgeGap(payload.question || "", { reason: payload.reason || "Created from viewer." }));
+      return;
+    }
+
+    if (url.pathname === "/api/growth-log") {
+      sendJson(res, readGrowthLog(Number(url.searchParams.get("limit") || 20)));
       return;
     }
 

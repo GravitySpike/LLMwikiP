@@ -147,6 +147,7 @@ Available tools:
 - `wiki_health`: report page counts, broken links, orphan pages, source coverage, score, and recommendations
 - `list_gaps`: list open knowledge gaps created by weak or missing wiki evidence
 - `create_knowledge_gap`: create a gap backlog item for a missing topic
+- `growth_log`: read recent one-line growth events
 
 Example JSON-RPC message:
 
@@ -174,6 +175,7 @@ Local endpoints:
 - `GET /api/health`
 - `GET /api/gaps`
 - `POST /api/gaps`
+- `GET /api/growth-log`
 
 ## Wiki Health Dashboard
 
@@ -208,12 +210,25 @@ That gap records:
 
 This makes the wiki behave less like a static file browser and more like a growing knowledge system.
 
+Every new gap also appends a one-line growth event to:
+
+```text
+wiki/growth-log.md
+```
+
+The log is intentionally commit-like:
+
+```text
+gap: How does agent memory differ from session memory? -> wiki/gaps/...
+```
+
 Typical loop:
 
 ```text
 ask question
   -> wiki lacks evidence
   -> gap file is created
+  -> one-line growth log is appended
   -> add source to raw/
   -> rebuild wiki
   -> validate
