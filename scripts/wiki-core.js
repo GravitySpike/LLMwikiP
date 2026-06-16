@@ -205,6 +205,7 @@ function answerFromWiki(question, limit = 5) {
     };
   }
 
+  const resolvedGap = resolveMatchingGap(question, hits);
   const sourcePages = hits.map((hit) => readPage(hit.id));
   const answerLines = [
     `Question: ${question}`,
@@ -221,6 +222,7 @@ function answerFromWiki(question, limit = 5) {
   return {
     answer: answerLines.join("\n"),
     sources: hits.map(({ title, path: pagePath, type }) => ({ title, path: pagePath, type })),
+    resolvedGap,
   };
 }
 
@@ -336,20 +338,61 @@ function readGapFile(slug) {
     title: data.title || extractTitle(body, slug),
     question: data.question || "",
     status: data.status || "open",
+    resolvedAt: data.resolved_at || null,
     createdAt: data.created_at || null,
     path: path.relative(ROOT, filePath).replace(/\\/g, "/"),
     content,
   };
 }
 
-function listKnowledgeGaps() {
+function listKnowledgeGaps(options = {}) {
+  const includeResolved = Boolean(options.includeResolved);
   if (!fs.existsSync(GAPS_DIR)) return [];
   return fs
     .readdirSync(GAPS_DIR)
     .filter((file) => file.endsWith(".md"))
     .map((file) => readGapFile(path.basename(file, ".md")))
     .filter(Boolean)
+    .filter((gap) => includeResolved || gap.status !== "resolved")
     .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+}
+
+function resolveKnowledgeGap(idOrSlug, details = {}) {
+  const slug = slugify(String(idOrSlug || "").replace(/^gaps\//, "").replace(/\.md$/, ""));
+  const gap = readGapFile(slug);
+  if (!gap) {
+    const error = new Error(`Knowledge gap not found: ${idOrSlug}`);
+    error.code = "GAP_NOT_FOUND";
+    throw error;
+  }
+  if (gap.status === "resolved") return gap;
+
+  const resolvedAt = new Date().toISOString();
+  let content = gap.content
+    .replace(/^status:\s*".*?"$/m, 'status: "resolved"')
+    .replace(/^status:\s*.*$/m, 'status: "resolved"');
+
+  if (/^resolved_at:/m.test(content)) {
+    content = content.replace(/^resolved_at:\s*.*$/m, `resolved_at: "${resolvedAt}"`);
+  } else {
+    content = content.replace(/^created_at:.*$/m, (line) => `${line}\nresolved_at: "${resolvedAt}"`);
+  }
+
+  content = content.replace(/## Status\n\n[\s\S]*$/m, `## Status\n\nResolved\n\n## Resolution\n\n${details.reason || "The wiki now contains enough evidence to answer this question."}\n`);
+  fs.writeFileSync(path.join(GAPS_DIR, `${gap.slug}.md`), content, "utf8");
+  const resolved = readGapFile(gap.slug);
+  appendGrowthLog(`resolved: ${summarizeOneLine(resolved.question)} -> ${resolved.path}`);
+  return resolved;
+}
+
+function resolveMatchingGap(question, hits = []) {
+  const normalized = String(question || "").toLowerCase();
+  const gap = listKnowledgeGaps().find((item) => item.question.toLowerCase() === normalized);
+  if (!gap) return null;
+  const sourceList = hits.slice(0, 3).map((hit) => `${hit.title} (${hit.path})`).join(", ");
+  return resolveKnowledgeGap(gap.slug, {
+    reason: `Resolved automatically because answer_from_wiki found enough evidence. Supporting pages: ${sourceList || "none"}.`,
+  });
 }
 
 function validateWikiLinks() {
@@ -405,6 +448,8 @@ function wikiHealth() {
   const sourcePages = pages.filter((page) => page.type === "source");
   const conceptPages = pages.filter((page) => page.type === "concept");
   const gapPages = pages.filter((page) => page.type === "gap");
+  const openGapPages = gapPages.filter((page) => page.frontmatter.status !== "resolved");
+  const resolvedGapPages = gapPages.filter((page) => page.frontmatter.status === "resolved");
   const growthLog = readGrowthLog(1);
   const sourceCoverage = conceptPages.map((page) => {
     const sources = Array.isArray(page.frontmatter.sources) ? page.frontmatter.sources : [];
@@ -436,7 +481,8 @@ function wikiHealth() {
     pageCount: pages.length,
     sourceCount: sourcePages.length,
     conceptCount: conceptPages.length,
-    gapCount: gapPages.length,
+    gapCount: openGapPages.length,
+    resolvedGapCount: resolvedGapPages.length,
     growthEventCount: growthLog.total,
     synthesisCount: pages.filter((page) => page.type === "synthesis").length,
     brokenLinkCount: validation.brokenLinks.length,
@@ -466,6 +512,7 @@ module.exports = {
   loadPages,
   readGrowthLog,
   readPage,
+  resolveKnowledgeGap,
   searchWiki,
   validateWikiLinks,
   wikiHealth,

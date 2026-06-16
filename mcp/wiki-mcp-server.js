@@ -6,6 +6,7 @@ const {
   listPages,
   readGrowthLog,
   readPage,
+  resolveKnowledgeGap,
   searchWiki,
   validateWikiLinks,
   wikiHealth,
@@ -87,6 +88,18 @@ const tools = [
       },
     },
   },
+  {
+    name: "resolve_knowledge_gap",
+    description: "Mark an open knowledge gap as resolved so it no longer counts as an open gap.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["id"],
+    },
+  },
 ];
 
 function textResult(value) {
@@ -115,6 +128,9 @@ async function callTool(name, args = {}) {
     return textResult(createKnowledgeGap(args.question, { reason: args.reason || "Created by MCP tool request." }));
   }
   if (name === "growth_log") return textResult(readGrowthLog(args.limit || 20));
+  if (name === "resolve_knowledge_gap") {
+    return textResult(resolveKnowledgeGap(args.id, { reason: args.reason || "Resolved by MCP tool request." }));
+  }
   throw new Error(`Unknown tool: ${name}`);
 }
 

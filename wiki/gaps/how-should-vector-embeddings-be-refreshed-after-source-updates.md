@@ -1,8 +1,9 @@
 ---
 type: gap
 title: "Knowledge Gap - How should vector embeddings be refreshed after source updates?"
-status: "open"
+status: "resolved"
 created_at: "2026-06-16T01:07:25.395Z"
+resolved_at: "2026-06-16T01:18:00.028Z"
 question: "How should vector embeddings be refreshed after source updates?"
 ---
 
@@ -31,4 +32,8 @@ The wiki did not contain enough matching evidence to answer confidently.
 
 ## Status
 
-Open
+Resolved
+
+## Resolution
+
+Demo resolution: a future source can now cover refresh policy.

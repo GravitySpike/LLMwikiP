@@ -10,7 +10,7 @@ const healthScore = document.querySelector("#health-score");
 const healthSources = document.querySelector("#health-sources");
 const healthConcepts = document.querySelector("#health-concepts");
 const healthBroken = document.querySelector("#health-broken");
-const healthOrphans = document.querySelector("#health-orphans");
+const healthResolved = document.querySelector("#health-resolved");
 const healthGaps = document.querySelector("#health-gaps");
 const healthEvents = document.querySelector("#health-events");
 const pageType = document.querySelector("#page-type");
@@ -220,7 +220,7 @@ async function boot() {
   healthSources.textContent = String(health.sourceCount);
   healthConcepts.textContent = String(health.conceptCount);
   healthBroken.textContent = String(health.brokenLinkCount);
-  healthOrphans.textContent = String(health.orphanPageCount);
+  healthResolved.textContent = String(health.resolvedGapCount || 0);
   healthGaps.textContent = String(health.gapCount || 0);
   healthEvents.textContent = String(health.growthEventCount || 0);
 

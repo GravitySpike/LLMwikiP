@@ -14,3 +14,4 @@ This append-only log records one-line summaries whenever the wiki discovers a ne
 | 2026-06-16T01:07:43.730Z | gap: What is the best way to version concept pages over time? -> wiki/gaps/what-is-the-best-way-to-version-concept-pages-over-time.md |
 | 2026-06-16T01:07:43.733Z | gap: How should stale claims be marked when sources are superseded? -> wiki/gaps/how-should-stale-claims-be-marked-when-sources-are-superseded.md |
 | 2026-06-16T01:07:43.735Z | gap: How can a multi-agent review board resolve conflicting edits? -> wiki/gaps/how-can-a-multi-agent-review-board-resolve-conflicting-edits.md |
+| 2026-06-16T01:18:00.032Z | resolved: How should vector embeddings be refreshed after source updates? -> wiki/gaps/how-should-vector-embeddings-be-refreshed-after-source-updates.md |

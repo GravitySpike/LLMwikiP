@@ -1,7 +1,7 @@
 ---
 type: health
 title: "Wiki Health Report"
-generated_at: "2026-06-16T01:11:13.639Z"
+generated_at: "2026-06-16T01:18:40.771Z"
 ---
 
 # Wiki Health Report
@@ -10,9 +10,10 @@ generated_at: "2026-06-16T01:11:13.639Z"
 
 - Sources: 1
 - Concepts: 7
-- Open knowledge gaps: 11
-- Growth log events: 10
-- Generated at: 2026-06-16T01:11:13.639Z
+- Open knowledge gaps: 10
+- Resolved knowledge gaps: 1
+- Growth log events: 11
+- Generated at: 2026-06-16T01:18:40.771Z
 - Link validation: run `npm run validate`
 
 ## Source Coverage

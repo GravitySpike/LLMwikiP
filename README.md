@@ -147,6 +147,7 @@ Available tools:
 - `wiki_health`: report page counts, broken links, orphan pages, source coverage, score, and recommendations
 - `list_gaps`: list open knowledge gaps created by weak or missing wiki evidence
 - `create_knowledge_gap`: create a gap backlog item for a missing topic
+- `resolve_knowledge_gap`: mark a gap as resolved so it no longer counts as open
 - `growth_log`: read recent one-line growth events
 
 Example JSON-RPC message:
@@ -175,6 +176,7 @@ Local endpoints:
 - `GET /api/health`
 - `GET /api/gaps`
 - `POST /api/gaps`
+- `POST /api/gaps/resolve`
 - `GET /api/growth-log`
 
 ## Wiki Health Dashboard
@@ -221,6 +223,9 @@ The log is intentionally commit-like:
 ```text
 gap: How does agent memory differ from session memory? -> wiki/gaps/...
 ```
+
+When a gap is resolved, the file remains as historical evidence but its frontmatter changes to `status: "resolved"`.
+Resolved gaps are not counted in the Health card's open `Gaps` value. Resolution also appends a `resolved:` line to `wiki/growth-log.md`.
 
 Typical loop:
 

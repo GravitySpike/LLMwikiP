@@ -453,7 +453,9 @@ generated_at: "${now}"
 
 function buildHealthReport(sources, concepts) {
   const gapsDir = path.join(wikiDir, "gaps");
-  const openGaps = fs.existsSync(gapsDir) ? fs.readdirSync(gapsDir).filter((file) => file.endsWith(".md")) : [];
+  const gapFiles = fs.existsSync(gapsDir) ? fs.readdirSync(gapsDir).filter((file) => file.endsWith(".md")) : [];
+  const resolvedGaps = gapFiles.filter((file) => fs.readFileSync(path.join(gapsDir, file), "utf8").includes('status: "resolved"'));
+  const openGaps = gapFiles.length - resolvedGaps.length;
   const growthLogPath = path.join(wikiDir, "growth-log.md");
   const growthEvents = fs.existsSync(growthLogPath)
     ? fs.readFileSync(growthLogPath, "utf8").split("\n").filter((line) => line.startsWith("| 20")).length
@@ -471,7 +473,8 @@ generated_at: "${now}"
 
 - Sources: ${sources.length}
 - Concepts: ${concepts.length}
-- Open knowledge gaps: ${openGaps.length}
+- Open knowledge gaps: ${openGaps}
+- Resolved knowledge gaps: ${resolvedGaps.length}
 - Growth log events: ${growthEvents}
 - Generated at: ${now}
 - Link validation: run \`npm run validate\`

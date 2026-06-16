@@ -8,6 +8,7 @@ const {
   listPages,
   readGrowthLog,
   readPage,
+  resolveKnowledgeGap,
   searchWiki,
   validateWikiLinks,
   wikiHealth,
@@ -107,6 +108,12 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/api/gaps" && req.method === "POST") {
       const payload = JSON.parse((await readBody(req)) || "{}");
       sendJson(res, createKnowledgeGap(payload.question || "", { reason: payload.reason || "Created from viewer." }));
+      return;
+    }
+
+    if (url.pathname === "/api/gaps/resolve" && req.method === "POST") {
+      const payload = JSON.parse((await readBody(req)) || "{}");
+      sendJson(res, resolveKnowledgeGap(payload.id || "", { reason: payload.reason || "Resolved from viewer." }));
       return;
     }
 

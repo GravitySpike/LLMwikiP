@@ -7,6 +7,7 @@ $healthScore = 0
 $sourceCount = 0
 $conceptCount = 0
 $gapCount = 0
+$resolvedGapCount = 0
 $eventCount = 0
 try {
   $healthJson = (node -e "const wiki=require('./scripts/wiki-core'); process.stdout.write(JSON.stringify(wiki.wikiHealth()))")
@@ -16,11 +17,13 @@ try {
   $sourceCount = $health.sourceCount
   $conceptCount = $health.conceptCount
   $gapCount = [string]$health.gapCount
+  $resolvedGapCount = [string]$health.resolvedGapCount
   $eventCount = $health.growthEventCount
 } catch {
   $pageCount = 0
 }
 if ([string]::IsNullOrWhiteSpace($gapCount)) { $gapCount = "0" }
+if ([string]::IsNullOrWhiteSpace($resolvedGapCount)) { $resolvedGapCount = "0" }
 
 Add-Type -AssemblyName System.Drawing
 
@@ -97,8 +100,8 @@ DrawText "Concepts" $fontSmall $muted $hx[1] $hy[0] 80 18
 DrawText "$conceptCount" $fontBold $text $hx[1] ($hy[0] + 17) 80 22
 DrawText "Broken" $fontSmall $muted $hx[2] $hy[0] 80 18
 DrawText "0" $fontBold $text $hx[2] ($hy[0] + 17) 80 22
-DrawText "Orphans" $fontSmall $muted $hx[0] $hy[1] 80 18
-DrawText "0" $fontBold $text $hx[0] ($hy[1] + 17) 80 22
+DrawText "Resolved" $fontSmall $muted $hx[0] $hy[1] 80 18
+DrawText "$resolvedGapCount" $fontBold $text $hx[0] ($hy[1] + 17) 80 22
 DrawText "Gaps" $fontSmall $muted $hx[1] $hy[1] 80 18
 DrawText "$gapCount" $fontBold $text $hx[1] ($hy[1] + 17) 80 22
 DrawText "Events" $fontSmall $muted $hx[2] $hy[1] 80 18

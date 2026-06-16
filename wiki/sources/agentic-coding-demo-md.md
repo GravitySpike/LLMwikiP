@@ -4,7 +4,7 @@ title: "agentic-coding-demo"
 source_file: "../raw/agentic-coding-demo.md"
 pages: 1
 sha256: "de5847c218228f0445135ba93978a3338a39131cf12771481c8263645e95f631"
-generated_at: "2026-06-16T01:11:13.639Z"
+generated_at: "2026-06-16T01:18:40.771Z"
 concepts:
   - "[[Vibe Coding]]"
   - "[[Agent Coding]]"
