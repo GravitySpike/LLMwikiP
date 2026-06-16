@@ -5,3 +5,4 @@ raw/_private/
 raw/*.pdf
 submission/
 .llm-wiki/extracted/
+research/last-run.json

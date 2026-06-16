@@ -29,6 +29,7 @@ Help users turn raw source material into a local LLM Wiki that can be searched, 
 3. Run `npm run validate`.
 4. Start the viewer with `npm run app`.
 5. Use MCP tools for search/read/answer operations.
+6. Use `npm run loop:gaps` to run the 12-hour knowledge-gap growth loop.
 
 ## Answering Rule
 

@@ -23,6 +23,7 @@ Before publishing or submitting:
 npm run build:wiki
 npm run validate
 npm test
+npm run loop:gaps:dry
 ```
 
 ## Agent Tool Contract
@@ -34,5 +35,14 @@ The agent can use:
 - `read_page`
 - `answer_from_wiki`
 - `validate_wiki_links`
+- `wiki_health`
+- `list_gaps`
+- `resolve_knowledge_gap`
+- `growth_log`
+- `gap_research_status`
 
 These tools must read from local wiki files and return source paths where possible.
+
+## Scheduled Growth Loop
+
+`npm run loop:gaps` starts a 12-hour gap research loop. The loop may resolve gaps from existing wiki evidence, queue unresolved questions in `research/queue/`, and append one-line growth events. Web research is opt-in with `ENABLE_WEB_RESEARCH=1`.

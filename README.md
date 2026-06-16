@@ -149,6 +149,7 @@ Available tools:
 - `create_knowledge_gap`: create a gap backlog item for a missing topic
 - `resolve_knowledge_gap`: mark a gap as resolved so it no longer counts as open
 - `growth_log`: read recent one-line growth events
+- `gap_research_status`: read the latest scheduled gap research loop status
 
 Example JSON-RPC message:
 
@@ -239,6 +240,51 @@ ask question
   -> validate
   -> re-ask and close the gap
 ```
+
+## Scheduled Gap Research Loop
+
+The project also includes a scheduled agent loop for wiki growth.
+
+Run one safe preview cycle:
+
+```sh
+npm run loop:gaps:dry
+```
+
+Run one local cycle:
+
+```sh
+npm run loop:gaps:once
+```
+
+Run the 12-hour loop:
+
+```sh
+npm run loop:gaps
+```
+
+What the loop does:
+
+- reads open gap files from `wiki/gaps/`
+- checks whether the current wiki can now answer each question
+- resolves gaps when source-backed evidence exists
+- queues unresolved gaps in `research/queue/`
+- appends one-line events to `wiki/growth-log.md`
+- writes the latest run summary to `research/last-run.json`
+
+Optional web intake can be enabled when network access is available:
+
+```sh
+ENABLE_WEB_RESEARCH=1 npm run loop:gaps:once
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:ENABLE_WEB_RESEARCH="1"; npm run loop:gaps:once
+```
+
+With web intake enabled, the loop uses a no-key public search endpoint, writes a research note into `raw/`, rebuilds the wiki, and then tries to resolve the gap.
 
 ## Material Input to Integration Flow
 

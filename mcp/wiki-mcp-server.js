@@ -1,5 +1,8 @@
 #!/usr/bin/env node
+const fs = require("node:fs");
+const path = require("node:path");
 const {
+  ROOT,
   answerFromWiki,
   createKnowledgeGap,
   listKnowledgeGaps,
@@ -89,6 +92,11 @@ const tools = [
     },
   },
   {
+    name: "gap_research_status",
+    description: "Read the latest scheduled gap research loop status, including open gaps, resolved gaps, validation state, and last run metadata.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
     name: "resolve_knowledge_gap",
     description: "Mark an open knowledge gap as resolved so it no longer counts as an open gap.",
     inputSchema: {
@@ -113,6 +121,21 @@ function textResult(value) {
   };
 }
 
+function gapResearchStatus() {
+  const lastRunPath = path.join(ROOT, "research", "last-run.json");
+  const health = wikiHealth();
+  const lastRun = fs.existsSync(lastRunPath) ? JSON.parse(fs.readFileSync(lastRunPath, "utf8")) : null;
+  return {
+    loopCommand: "npm run loop:gaps",
+    intervalHours: lastRun ? lastRun.intervalHours : 12,
+    openGapCount: health.gapCount,
+    resolvedGapCount: health.resolvedGapCount,
+    growthEventCount: health.growthEventCount,
+    validationOk: validateWikiLinks().ok,
+    lastRun,
+  };
+}
+
 async function callTool(name, args = {}) {
   if (name === "list_pages") return textResult(listPages());
   if (name === "search_wiki") return textResult(searchWiki(args.query, args.limit));
@@ -128,6 +151,7 @@ async function callTool(name, args = {}) {
     return textResult(createKnowledgeGap(args.question, { reason: args.reason || "Created by MCP tool request." }));
   }
   if (name === "growth_log") return textResult(readGrowthLog(args.limit || 20));
+  if (name === "gap_research_status") return textResult(gapResearchStatus());
   if (name === "resolve_knowledge_gap") {
     return textResult(resolveKnowledgeGap(args.id, { reason: args.reason || "Resolved by MCP tool request." }));
   }

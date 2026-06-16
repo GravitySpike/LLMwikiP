@@ -7,6 +7,9 @@
     "app": "node app/server.js",
     "build:wiki": "node scripts/build-llm-wiki.js",
     "demo:png": "powershell -ExecutionPolicy Bypass -File scripts/create-mvp-png.ps1 -OutputPath demo/wiki-viewer.png",
+    "loop:gaps": "node scripts/gap-research-loop.js --watch --interval-hours 12",
+    "loop:gaps:dry": "node scripts/gap-research-loop.js --once --dry-run",
+    "loop:gaps:once": "node scripts/gap-research-loop.js --once",
     "mcp": "node tools/wiki-mcp-server.js",
     "test": "node scripts/build-llm-wiki.js --check",
     "validate": "node harness/hooks/preflight-check.js"
