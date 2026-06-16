@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-06-14T09:21:19.044Z",
+  "rawDir": "raw",
+  "wikiDir": "wiki",
+  "sources": [
+    {
+      "fileName": "agentic-coding-demo.md",
+      "slug": "agentic-coding-demo-md",
+      "title": "agentic-coding-demo",
+      "pages": 1,
+      "sha256": "de5847c218228f0445135ba93978a3338a39131cf12771481c8263645e95f631",
+      "concepts": [
+        "vibe-coding",
+        "agent-coding",
+        "agent-specifications",
+        "harness-and-skills",
+        "harness-engineering",
+        "model-context-protocol",
+        "loop-and-hooks"
+      ]
+    }
+  ]
+}

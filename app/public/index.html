@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agentic Coding LLM Wiki</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <header class="brand">
+        <div>
+          <h1>LLM Wiki</h1>
+          <p><span id="page-count">0</span> pages · <span id="validation">checking</span> · MCP tools</p>
+        </div>
+      </header>
+      <label class="search">
+        <span>Search</span>
+        <input id="search-input" placeholder="title, concept, tool..." autocomplete="off" />
+      </label>
+      <nav id="page-list" class="page-list"></nav>
+    </aside>
+
+    <main class="reader">
+      <section class="reader-toolbar">
+        <div>
+          <span id="page-type" class="pill">concept</span>
+          <span id="page-path" class="muted"></span>
+        </div>
+      </section>
+      <article id="markdown" class="markdown"></article>
+    </main>
+
+    <aside class="agent">
+      <header class="agent-header">
+        <div>
+          <strong>Wiki Agent</strong>
+          <span>subagent over MCP-style tools</span>
+        </div>
+        <button id="reset-chat" type="button">Reset</button>
+      </header>
+      <section id="chat-log" class="chat-log"></section>
+      <form id="chat-form" class="chat-form">
+        <input id="chat-input" placeholder="질문/검증/수정 요청..." />
+        <button type="submit">Send</button>
+      </form>
+    </aside>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

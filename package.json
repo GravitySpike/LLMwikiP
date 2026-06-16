@@ -1,0 +1,21 @@
+{
+  "name": "agentic-wiki-lab",
+  "version": "1.0.0",
+  "description": "Runnable harness, LLM Wiki, MCP tools, and viewer for local knowledge bases.",
+  "main": "scripts/build-llm-wiki.js",
+  "scripts": {
+    "app": "node app/server.js",
+    "build:wiki": "node scripts/build-llm-wiki.js",
+    "demo:png": "powershell -ExecutionPolicy Bypass -File scripts/create-mvp-png.ps1 -OutputPath demo/wiki-viewer.png",
+    "mcp": "node tools/wiki-mcp-server.js",
+    "test": "node scripts/build-llm-wiki.js --check",
+    "validate": "node harness/hooks/preflight-check.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "pdf-parse": "^2.4.5"
+  }
+}
