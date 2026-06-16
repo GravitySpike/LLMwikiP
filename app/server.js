@@ -7,6 +7,7 @@ const {
   readPage,
   searchWiki,
   validateWikiLinks,
+  wikiHealth,
 } = require("../scripts/wiki-core");
 
 const PORT = Number(process.env.PORT || 3000);
@@ -87,6 +88,11 @@ const server = http.createServer(async (req, res) => {
 
     if (url.pathname === "/api/validate") {
       sendJson(res, validateWikiLinks());
+      return;
+    }
+
+    if (url.pathname === "/api/health") {
+      sendJson(res, wikiHealth());
       return;
     }
 

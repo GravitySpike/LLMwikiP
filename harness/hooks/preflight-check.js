@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-const { validateWikiLinks } = require("../../scripts/wiki-core");
+const { validateWikiLinks, wikiHealth } = require("../../scripts/wiki-core");
 
 const result = validateWikiLinks();
+const health = wikiHealth();
 
 if (!result.ok) {
   console.error("Wiki link validation failed:");
@@ -10,3 +11,4 @@ if (!result.ok) {
 }
 
 console.log(`Wiki validation OK: ${result.pageCount} pages, 0 broken links.`);
+console.log(`Wiki health score: ${health.score}/100 (${health.sourceCount} sources, ${health.conceptCount} concepts).`);

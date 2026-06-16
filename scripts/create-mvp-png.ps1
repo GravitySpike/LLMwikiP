@@ -3,8 +3,16 @@ param(
 )
 
 $pageCount = 0
+$healthScore = 0
+$sourceCount = 0
+$conceptCount = 0
 try {
-  $pageCount = (node -e "const wiki=require('./scripts/wiki-core'); process.stdout.write(String(wiki.listPages().length))")
+  $healthJson = (node -e "const wiki=require('./scripts/wiki-core'); process.stdout.write(JSON.stringify(wiki.wikiHealth()))")
+  $health = $healthJson | ConvertFrom-Json
+  $pageCount = $health.pageCount
+  $healthScore = $health.score
+  $sourceCount = $health.sourceCount
+  $conceptCount = $health.conceptCount
 } catch {
   $pageCount = 0
 }
@@ -73,7 +81,19 @@ $graphics.DrawLine((Pen $line), 0, 98, 330, 98)
 FillRoundRect 12 118 300 40 6 ([System.Drawing.Color]::FromArgb(13, 16, 23))
 DrawText "Search: harness, MCP, agent..." $fontBody $muted 24 127 260 24
 
-DrawText "CONCEPTS" $fontSmall $muted 16 176 200 20
+FillRoundRect 12 170 300 86 8 ([System.Drawing.Color]::FromArgb(17, 23, 34))
+DrawText "Wiki Health" $fontBold $text 24 184 140 24
+DrawText "$healthScore/100" $fontSmall $ok 246 188 58 18
+DrawText "Sources" $fontSmall $muted 24 218 55 18
+DrawText "$sourceCount" $fontBold $text 24 235 45 22
+DrawText "Concepts" $fontSmall $muted 94 218 62 18
+DrawText "$conceptCount" $fontBold $text 94 235 45 22
+DrawText "Broken" $fontSmall $muted 174 218 55 18
+DrawText "0" $fontBold $text 174 235 45 22
+DrawText "Orphans" $fontSmall $muted 244 218 58 18
+DrawText "0" $fontBold $text 244 235 45 22
+
+DrawText "CONCEPTS" $fontSmall $muted 16 274 200 20
 $concepts = @(
   "Agent Coding",
   "Agent Pool and Orchestrator",
@@ -87,7 +107,7 @@ $concepts = @(
   "Subprocess Calling",
   "Vibe Coding"
 )
-$y = 204
+$y = 302
 foreach ($item in $concepts) {
   if ($item -eq "Harness Engineering") { FillRoundRect 8 ($y - 3) 310 34 6 ([System.Drawing.Color]::FromArgb(38, 49, 72)) }
   $graphics.FillEllipse((Brush $accent), 16, ($y + 8), 9, 9)

@@ -207,6 +207,81 @@ function validateWikiLinks() {
   };
 }
 
+function wikiHealth() {
+  const pages = loadPages();
+  const validation = validateWikiLinks();
+  const maintenancePaths = new Set(["wiki/log.md", "wiki/schema.md", "wiki/health-report.md"]);
+  const byType = pages.reduce((counts, page) => {
+    counts[page.type] = (counts[page.type] || 0) + 1;
+    return counts;
+  }, {});
+  const incoming = new Map(pages.map((page) => [page.title.toLowerCase(), 0]));
+  const slugToTitle = new Map(pages.map((page) => [page.slug.toLowerCase(), page.title.toLowerCase()]));
+
+  for (const page of pages) {
+    const links = [...page.body.matchAll(/\[\[([^\]]+)\]\]/g)].map((match) => match[1].split("|")[0].trim());
+    for (const link of links) {
+      const normalized = link.toLowerCase();
+      const title = incoming.has(normalized) ? normalized : slugToTitle.get(normalized);
+      if (title && incoming.has(title)) incoming.set(title, incoming.get(title) + 1);
+    }
+  }
+
+  const orphanPages = pages
+    .filter((page) => page.type !== "overview" && page.path !== "wiki/index.md")
+    .filter((page) => !maintenancePaths.has(page.path))
+    .filter((page) => (incoming.get(page.title.toLowerCase()) || 0) === 0)
+    .map((page) => ({ title: page.title, path: page.path, type: page.type }));
+
+  const sourcePages = pages.filter((page) => page.type === "source");
+  const conceptPages = pages.filter((page) => page.type === "concept");
+  const sourceCoverage = conceptPages.map((page) => {
+    const sources = Array.isArray(page.frontmatter.sources) ? page.frontmatter.sources : [];
+    return {
+      title: page.title,
+      path: page.path,
+      sourceCount: sources.filter((source) => source && source !== "none").length,
+    };
+  });
+  const uncoveredConcepts = sourceCoverage.filter((item) => item.sourceCount === 0);
+  const generatedTimes = pages
+    .map((page) => page.frontmatter.generated_at)
+    .filter(Boolean)
+    .sort();
+
+  const scoreParts = [
+    validation.ok,
+    orphanPages.length === 0,
+    uncoveredConcepts.length === 0,
+    sourcePages.length > 0,
+    conceptPages.length > 0,
+  ];
+  const score = Math.round((scoreParts.filter(Boolean).length / scoreParts.length) * 100);
+
+  return {
+    ok: validation.ok && uncoveredConcepts.length === 0,
+    score,
+    generatedAt: generatedTimes.at(-1) || null,
+    pageCount: pages.length,
+    sourceCount: sourcePages.length,
+    conceptCount: conceptPages.length,
+    synthesisCount: pages.filter((page) => page.type === "synthesis").length,
+    brokenLinkCount: validation.brokenLinks.length,
+    orphanPageCount: orphanPages.length,
+    uncoveredConceptCount: uncoveredConcepts.length,
+    byType,
+    brokenLinks: validation.brokenLinks,
+    orphanPages,
+    uncoveredConcepts,
+    recommendations: [
+      validation.brokenLinks.length ? "Fix broken wiki links before publishing." : null,
+      orphanPages.length ? "Add links from index, overview, or related concepts to orphan pages." : null,
+      uncoveredConcepts.length ? "Attach at least one source to each concept page." : null,
+      sourcePages.length ? null : "Add at least one raw source and rebuild the wiki.",
+    ].filter(Boolean),
+  };
+}
+
 module.exports = {
   ROOT,
   WIKI_DIR,
@@ -216,4 +291,5 @@ module.exports = {
   readPage,
   searchWiki,
   validateWikiLinks,
+  wikiHealth,
 };

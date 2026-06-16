@@ -1,6 +1,6 @@
 # Purpose
 
-This wiki exists to turn local raw source files into a persistent, browsable Markdown knowledge base.
+This wiki exists to turn the raw Agentic Coding Basics PDFs into a persistent, browsable Markdown knowledge base.
 
 ## Goals
 

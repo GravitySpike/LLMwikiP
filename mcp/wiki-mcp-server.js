@@ -5,6 +5,7 @@ const {
   readPage,
   searchWiki,
   validateWikiLinks,
+  wikiHealth,
 } = require("../scripts/wiki-core");
 
 const tools = [
@@ -51,6 +52,11 @@ const tools = [
     description: "Validate wiki-style [[links]] across generated Markdown pages.",
     inputSchema: { type: "object", properties: {} },
   },
+  {
+    name: "wiki_health",
+    description: "Return a quality dashboard for the current wiki, including page counts, broken links, orphan pages, coverage, and recommendations.",
+    inputSchema: { type: "object", properties: {} },
+  },
 ];
 
 function textResult(value) {
@@ -73,6 +79,7 @@ async function callTool(name, args = {}) {
   }
   if (name === "answer_from_wiki") return textResult(answerFromWiki(args.question, args.limit));
   if (name === "validate_wiki_links") return textResult(validateWikiLinks());
+  if (name === "wiki_health") return textResult(wikiHealth());
   throw new Error(`Unknown tool: ${name}`);
 }
 

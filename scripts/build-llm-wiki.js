@@ -100,7 +100,7 @@ function resetGeneratedWiki() {
     fs.rmSync(path.join(wikiDir, name), { recursive: true, force: true });
   }
 
-  for (const name of ["index.md", "log.md", "overview.md", "schema.md"]) {
+  for (const name of ["health-report.md", "index.md", "log.md", "overview.md", "schema.md"]) {
     fs.rmSync(path.join(wikiDir, name), { force: true });
   }
 }
@@ -451,6 +451,37 @@ generated_at: "${now}"
 `;
 }
 
+function buildHealthReport(sources, concepts) {
+  return `---
+type: health
+title: "Wiki Health Report"
+generated_at: "${now}"
+---
+
+# Wiki Health Report
+
+## Summary
+
+- Sources: ${sources.length}
+- Concepts: ${concepts.length}
+- Generated at: ${now}
+- Link validation: run \`npm run validate\`
+
+## Source Coverage
+
+${concepts
+  .map((concept) => {
+    const count = sources.filter((source) => source.concepts.some((item) => item.slug === concept.slug)).length;
+    return `- [[${concept.title}]]: ${count} source${count === 1 ? "" : "s"}`;
+  })
+  .join("\n")}
+
+## Agent Recommendation
+
+Use the \`wiki_health\` MCP tool before answering or publishing. If broken links or uncovered concepts appear, rebuild the wiki or add better source material.
+`;
+}
+
 function buildSchema() {
   return `# LLM Wiki Schema
 
@@ -591,6 +622,7 @@ async function main() {
     writeFile(path.join(root, "purpose.md"), buildPurpose());
     writeFile(path.join(wikiDir, "schema.md"), buildSchema());
     writeFile(path.join(wikiDir, "overview.md"), buildOverview(sources, usedConcepts));
+    writeFile(path.join(wikiDir, "health-report.md"), buildHealthReport(sources, usedConcepts));
     writeFile(path.join(wikiDir, "index.md"), buildIndex(sources, usedConcepts));
     writeFile(path.join(wikiDir, "log.md"), buildLog(sources));
     writeFile(path.join(wikiDir, "synthesis", "learning-path.md"), buildLearningPath(sources, usedConcepts));

@@ -144,6 +144,7 @@ Available tools:
 - `read_page`: read one wiki page by id, slug, title, or path
 - `answer_from_wiki`: answer a question using retrieved wiki pages
 - `validate_wiki_links`: check internal double-bracket wiki links
+- `wiki_health`: report page counts, broken links, orphan pages, source coverage, score, and recommendations
 
 Example JSON-RPC message:
 
@@ -168,6 +169,21 @@ Local endpoints:
 - `GET /api/search?q=harness`
 - `POST /api/answer`
 - `GET /api/validate`
+- `GET /api/health`
+
+## Wiki Health Dashboard
+
+The viewer includes a Wiki Health card that makes the project more than a static wiki viewer.
+
+It reports:
+
+- health score
+- source count
+- concept count
+- broken link count
+- orphan page count
+
+The same information is available to agents through the `wiki_health` MCP tool and to humans through `wiki/health-report.md`.
 
 ## Material Input to Integration Flow
 

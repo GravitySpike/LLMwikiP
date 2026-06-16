@@ -6,6 +6,11 @@ const markdown = document.querySelector("#markdown");
 const searchInput = document.querySelector("#search-input");
 const pageCount = document.querySelector("#page-count");
 const validation = document.querySelector("#validation");
+const healthScore = document.querySelector("#health-score");
+const healthSources = document.querySelector("#health-sources");
+const healthConcepts = document.querySelector("#health-concepts");
+const healthBroken = document.querySelector("#health-broken");
+const healthOrphans = document.querySelector("#health-orphans");
 const pageType = document.querySelector("#page-type");
 const pagePath = document.querySelector("#page-path");
 const chatLog = document.querySelector("#chat-log");
@@ -189,13 +194,23 @@ async function ask(question) {
 }
 
 async function boot() {
-  const [pageResponse, validationResponse] = await Promise.all([fetch("/api/pages"), fetch("/api/validate")]);
+  const [pageResponse, validationResponse, healthResponse] = await Promise.all([
+    fetch("/api/pages"),
+    fetch("/api/validate"),
+    fetch("/api/health"),
+  ]);
   pages = await pageResponse.json();
   const validationResult = await validationResponse.json();
+  const health = await healthResponse.json();
 
   pageCount.textContent = String(pages.length);
   validation.textContent = validationResult.ok ? "validate OK" : `${validationResult.brokenLinks.length} broken`;
   validation.className = validationResult.ok ? "ok" : "warn";
+  healthScore.textContent = `${health.score}/100`;
+  healthSources.textContent = String(health.sourceCount);
+  healthConcepts.textContent = String(health.conceptCount);
+  healthBroken.textContent = String(health.brokenLinkCount);
+  healthOrphans.textContent = String(health.orphanPageCount);
 
   renderPageList(pages);
   await openPage("concepts/harness-engineering");
